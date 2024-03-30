@@ -10,7 +10,7 @@
     <style>
         #map { /* Estilo para el contenedor del mapa */
             width: 100%;
-            height: 1000px;
+            height: 400px;
         }
     </style>
 </head>
@@ -18,7 +18,7 @@
     <div id='map'></div> <!-- Contenedor del mapa -->
     
     <script>
-        mapboxgl.accessToken = 'pk.eyJ1IjoiZGFubmVyY2l0bzc3NyIsImEiOiJjbHR4N2xtMzUwMXhmMnFyenpqdGF3dnV1In0.Kjepc8DPEHTgN1iygmsgbg'; // Reemplaza 'TU_API_KEY_DE_MAPBOX' con tu clave de API de Mapbox
+        mapboxgl.accessToken = 'TU_API_KEY_DE_MAPBOX'; // Reemplaza 'TU_API_KEY_DE_MAPBOX' con tu clave de API de Mapbox
 
         var map = new mapboxgl.Map({
             container: 'map',
@@ -27,37 +27,27 @@
             zoom: 12 // Nivel de zoom inicial
         });
 
-        var marker = null; // Variable para guardar la referencia al marcador actual
-
-        function actualizarMapa() {
-            // Realizar petición Ajax para obtener las últimas coordenadas
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', 'obtener_ultima_coordenada.php', true);
-            xhr.onload = function () {
-                if (xhr.status >= 200 && xhr.status < 300) {
-                    var data = JSON.parse(xhr.responseText);
+        // Función para obtener las coordenadas del usuario mediante AJAX
+        function obtenerCoordenadas() {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    // Procesar la respuesta JSON
+                    var coordenadas = JSON.parse(this.responseText);
                     // Actualizar el mapa con las nuevas coordenadas
-                    map.setCenter([data.longitud, data.latitud]);
-                    // Eliminar el marcador anterior, si existe
-                    if (marker !== null) {
-                        marker.remove();
-                    }
-                    // Añadir un nuevo marcador en la nueva ubicación
-                    marker = new mapboxgl.Marker()
-                        .setLngLat([data.longitud, data.latitud])
+                    map.setCenter([coordenadas.longitud, coordenadas.latitud]);
+                    // Añadir marcador
+                    new mapboxgl.Marker()
+                        .setLngLat([coordenadas.longitud, coordenadas.latitud])
                         .addTo(map);
-                } else {
-                    console.error('Error al obtener las coordenadas:', xhr.statusText);
                 }
             };
-            xhr.onerror = function () {
-                console.error('Error de red al obtener las coordenadas');
-            };
-            xhr.send();
+            xhttp.open("GET", "obtener_ultima_coordenada.php", true);
+            xhttp.send();
         }
 
-        // Llamar a la función para actualizar el mapa cada 10 segundos (10000 milisegundos)
-        setInterval(actualizarMapa, 10000);
+        // Llamar a la función para obtener coordenadas cada 10 segundos
+        setInterval(obtenerCoordenadas, 10000);
     </script>
 </body>
 </html>
